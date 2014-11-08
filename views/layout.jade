@@ -1,0 +1,14 @@
+doctype html
+html
+	head
+		block head
+			block title
+				title Page
+			link(rel='stylesheet', href='/css/bootstrap.css')
+			link(rel='stylesheet', href='/css/main.css')
+			script(src='js/jquery-1.10.2.js')
+	body
+		include header
+		div.container
+			block content
+			include footer

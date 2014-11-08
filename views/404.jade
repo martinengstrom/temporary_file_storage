@@ -1,0 +1,16 @@
+extends layout
+
+block title
+	title 404
+
+block content
+	h1 File not found
+	br
+	p The file you requested (#{adress}) cannot be found.
+	p Possible reasons are:
+	ul
+		li The file expired due to old age and was deleted
+		li You typed the wrong filename
+	br
+	br
+	a(href='/') Go back

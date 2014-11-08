@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="http://getbootstrap.com/docs-assets/ico/favicon.png">
+
+    <title>Temporary Files</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/main.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" href="css/jquery.fileupload.css">
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
+    <script type="text/javascript" src="js/jquery-1.10.2.js"></script>
+
+    <!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
+    <script src="js/jquery.ui.widget.js"></script>
+    <!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
+    <script src="js/jquery.iframe-transport.js"></script>
+    <!-- The basic File Upload plugin -->
+    <script src="js/jquery.fileupload.js"></script>
+    <script>
+
+    /* 
+      TODO: Make a friend check and provide a prompt/warning if necessary
+    */
+
+    function login(response, info){
+        if (response.authResponse) {
+            var accessToken = response.authResponse.accessToken;
+            /* Enable  upload elements. Store access token somewhere  for ajax calls? 
+             Do friends check before enabling elements */
+             enableFileUpload(accessToken);
+             $('.btn').removeClass('disabled');
+        }
+    }
+     
+    function logout(response){
+      /* Disable upload elements */
+      $('.btn').addClass('disabled');
+    }
+
+
+    function updateFilelist() {
+      // Send a JSON request to the server to get files and links
+      $.ajax({
+        url: "json/filelist",
+        type: "post",
+        dataType: 'json',
+        success: function(data) {
+
+          var $table = $('<table>').addClass('table table-striped table-hover');
+          $table.append('<thead>').children('thead')
+            .append('<tr />').children('tr').append('<th>#</th><th>Filename</th><th>Size</th><th>Age</th><th></th>');
+
+          var $tbody = $table.append('<tbody />').children('tbody');
+
+          var foreachIndexSucksBalls = 1;
+          $.each(data.files, function (index, file) {
+            //$('<p/>').text(file.name).appendTo('#fileList');
+            var $trow = $tbody.append('<tr />').children('tr:last')
+              .append('<td>' + (foreachIndexSucksBalls) + '</td>')
+              .append('<td><a href="' + file.path + '" target="_blank">' + file.name + '</a></td>')
+              .append('<td>' + file.size + '</td>')
+              .append('<td>' + file.ageFormatted + '</td>').click(function(e) {
+                if (! $(e.target).is('a'))
+                  window.open(file.path);
+              });
+
+            if (file.age > (25*60)) {
+              $trow.append('<td><i class="glyphicon glyphicon-warning-sign"></i></td>');
+            } else {
+              $trow.append('<td></td>');
+            }
+
+            foreachIndexSucksBalls = foreachIndexSucksBalls + 1;
+
+          });
+
+          $('#fileList').html($table);
+        },
+        error: function() {
+          /* Bad? */
+          $('#fileList').html('<div class="alert alert-danger">Unable to query file list</div>');
+        }
+      });
+    }
+
+    function displayAlert(alert, message) {
+      $('#errorContainer').append('<div class="alert alert-'+alert+' alert-dismissable">' +
+        '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>' +
+        '<strong>'+((alert=="danger")?"Error!":"Success!")+'</strong> ' + message + '</div>'
+      );
+    }
+
+    function enableFileUpload(accessToken){
+        'use strict';
+        // Change this to the location of your server-side upload handler:
+        var url =  'upload';
+        $('#fileupload').fileupload({
+            url: url,
+            dataType: 'json',
+            maxChunkSize: 1000000,
+            formData : {fbAccessToken: accessToken},
+            done: function (e, data) {
+                /*
+                $.each(data.result.files, function (index, file) {
+                    $('<p/>').text(file.name).appendTo('#files');
+                });
+                */
+                if (data.result.files[0].error == "") {
+                  displayAlert('success', data.result.files[0].name + ' successfully uploaded');
+                } else {
+                  displayAlert('danger', data.result.files[0].error);
+                }
+
+                $('#progress .progress-bar').css('width', '0%');
+                $('#uploadInfo').hide();
+                updateFilelist();
+            },
+            fail: function (e, data) {
+              displayAlert('danger', data.errorThrown);
+
+            },
+            progressall: function (e, data) {
+                if($('#uploadInfo').not(':visible')) {
+                  $('#uploadInfo').show();
+                }
+
+                var progress = parseInt(data.loaded / data.total * 100, 10);
+                $('#progress .progress-bar').css(
+                    'width',
+                    progress + '%'
+                );
+            }
+        }).on('fileuploadfail', function (e, data) {
+          displayAlert('danger', data.errorThrown)
+        }).prop('disabled', !$.support.fileInput)
+            .parent().addClass($.support.fileInput ? undefined : 'disabled');
+    }
+
+    $(document).ready(function() {
+      //window.alert('running js');
+
+      // Hide the fancy first time visit info thing for now. Enable later with cookie checking
+      $('.jumbotron').hide();
+      $('#uploadInfo').hide();
+
+      $('.btn').addClass('disabled');
+
+      updateFilelist();
+      setInterval(function(){updateFilelist()},30000);
+
+      $.ajaxSetup({ cache: true });
+      $.getScript('//connect.facebook.net/en_US/all.js', function(){
+        FB.init({
+          appId: '588320341233153',
+          status: true,
+          cookie: true,
+          xfbml: true,
+          oauth: true
+        });     
+
+      function updateButton(response) {
+              if (response.authResponse) {
+                  //user is already logged in and connected
+                  FB.api('/me', function(info) {
+                      login(response, info);
+                  });
+   
+          /* Change FB button functionality */
+                  $('#button').click(function() {
+                      FB.logout(function(response) {
+                          logout(response);
+                      });
+                  });
+              } else {
+                  //user is not connected to your app or logged out
+            /* Change FB button functionalit */
+                  logout(undefined);
+                  $('#button').click(function() {
+                      FB.login(function(response) {
+                          if (response.authResponse) {
+                              FB.api('/me', function(info) {
+                                  login(response, info);
+                              });
+                          } else {
+                              //user cancelled login or did not grant authorization
+                              showLoader(false);
+                          }
+                      });
+                  });
+              }
+          }
+   
+          // run once with current status and whenever the status changes
+          FB.getLoginStatus(updateButton);
+          FB.Event.subscribe('auth.statusChange', updateButton);
+      });
+      });
+    </script>
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <!-- <a class="navbar-brand" href="#">Temp Files</a> -->
+          <a class="navbar-brand">Temporary File Storage</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <div class="navbar-text navbar-right">
+            <div class="fb-login-button" data-width="200" data-height="34" data-max-rows="1" data-autologoutlink="true" data-show-faces="false"></div>
+          </div>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </div>
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <div class="container">
+        <h1>Wat is this?</h1>
+        <p>This is a temporary file storage service<br>
+        Files can be uploaded and stored for a maximum of 30 minutes until they are deleted<br>
+        In order to upload you need to login via Facebook and be friends with <a href="https://www.facebook.com/martin.engstrom.92">Martin Engström</a></p>
+        <p><a class="btn btn-primary btn-lg" role="button">Please go away</a></p>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <h1>Upload</h1>
+      <div class="well well-lg">
+        <!-- The fileinput-button span is used to style the file input field as button -->
+        <span class="btn btn-success fileinput-button">
+            <i class="glyphicon glyphicon-plus"></i>
+            <span>Select files...</span>
+            <!-- The file input field used as target for the file upload widget -->
+            <input id="fileupload" type="file" name="files" multiple>
+        </span>
+        <div id="uploadInfo">
+          <br>
+          <br>
+          <!-- The global progress bar -->
+          <div id="progress" class="progress">
+              <div class="progress-bar progress-bar-success"></div>
+          </div>
+          <!-- The container for the uploaded files -->
+          <div id="files" class="files"></div>
+          <br>
+        </div>
+        <div id="errorContainer"></div>
+      </div>
+
+      <div id="fileList">
+      </div>
+
+      <br>
+      <hr>
+
+      <footer>
+        <p>© sigkill.me Martin "xealot" Engström 2014</p>
+      </footer>
+    </div> <!-- /container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/bootstrap.js"></script>
+
+</body></html>
