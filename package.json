@@ -1,0 +1,28 @@
+{
+  "name": "temporary_file_upload",
+  "version": "1.0.0",
+  "description": "temporary file storage",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.10.1",
+    "async": "^0.9.0",
+    "fb": "^0.7.0",
+    "formidable": "^1.0.15",
+    "express-handlebars": "^1.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/martinengstrom/temporary_file_storage.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/martinengstrom/temporary_file_storage/issues"
+  },
+  "homepage": "https://github.com/martinengstrom/temporary_file_storage"
+}

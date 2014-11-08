@@ -19,6 +19,11 @@ Create a cronjob to clean up the old files, example:
     * * * * * node /srv/node/upload/cron.js
 ```
 
+and finally install the dependencies:
+```
+    npm install
+```
+
 ## Usage
 You should modify server.js to use your facebook id instead of mine, like so:
 ```JavaScript
