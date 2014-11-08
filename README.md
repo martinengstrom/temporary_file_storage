@@ -29,3 +29,8 @@ You should modify server.js to use your facebook id instead of mine, like so:
 ```JavaScript
     var XEALOT_USERID = '1020902295'; // Your ID here
 ```
+and then simply run **node server.js**
+
+## Example
+To see this project running in production please visit:
+[http://tmp.sigkill.me/](http://tmp.sigkill.me/)
