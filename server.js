@@ -1,4 +1,5 @@
 var express = require('express');
+var exphbs = require('express-handlebars');
 var formidable = require('formidable');
 var fb = require('fb');
 var path = require('path');
@@ -135,7 +136,12 @@ app.set('views', __dirname + '/views');
 app.use(express.static(__dirname + "/static"));
 app.use(express.static(__dirname + "/files"));	// uploaded files
 
-app.set('view engine', 'jade');
+//app.set('view engine', 'jade');
+app.engine('handlebars', exphbs({defaultLayout: 'main', layoutsDir: __dirname + '/views/'}));
+app.set('view engine', 'handlebars');
+
+/* ONLY ENABLE THE NEXT LINE WHEN IN PRODUCTION */
+app.enable('view cache');
 
 app.get('/upload', function(req, res) {
 	res.write("hello");
