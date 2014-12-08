@@ -13,16 +13,13 @@ You need to make sure that the following folder structure is present:
     └── views
 ```
 
-Make sure files and tmp are writeable by the node process.
-Create a cronjob to clean up the old files, example:
-```
-    * * * * * node /srv/node/upload/cron.js
-```
-
-and finally install the dependencies:
+Install the dependencies:
 ```
     npm install
 ```
+
+Make sure ./files and ./tmp are writeable by the node process and start server.js and cron.js with node as normal.
+I have included a sample systemd service unit that will run both files using forever.
 
 ## Usage
 You should modify server.js to use your facebook id instead of mine, like so:
