@@ -1,0 +1,19 @@
+[Unit]
+Description=Upload nodejs service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/forever start /srv/node/upload/server.js
+ExecStart=/usr/bin/forever start /srv/node/upload/cron.js
+
+ExecStop=/usr/bin/forever stop /srv/node/upload/server.js
+ExecStop=/usr/bin/forever stop /srv/node/upload/cron.js
+
+StandardOutput=syslog
+SyslogIdentifier=node-upload
+User=xealot
+Group=users
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
