@@ -23,8 +23,8 @@ var BLACKLISTED_EXTENSIONS = [
 	'.xhtml'
 ];
 
-var XEALOT_USERID = '1020902295';
-
+// My (Martin Engström) facebook ID will be used if none is specified
+var FB_USERID = (process.env.fbuid || '1020902295');
 
 /*
 	It seems that formidable does not fetch content-range from the form-data
@@ -108,8 +108,8 @@ function checkFbAuth(fields, callback) {
 	fb.setAccessToken(fields.fbAccessToken);
 
 	getFbUserID(function (userid) {
-		if (userid != XEALOT_USERID) {
-			fbCheckFriend(XEALOT_USERID, function(result) {
+		if (userid != FB_USERID) {
+			fbCheckFriend(FB_USERID, function(result) {
 				callback(result);
 			});
 		} else 
@@ -136,7 +136,6 @@ app.set('views', __dirname + '/views');
 app.use(express.static(__dirname + "/static"));
 app.use(express.static(__dirname + "/files"));	// uploaded files
 
-//app.set('view engine', 'jade');
 app.engine('handlebars', exphbs({defaultLayout: 'main', layoutsDir: __dirname + '/views/'}));
 app.set('view engine', 'handlebars');
 
@@ -181,20 +180,17 @@ app.post('/json/filelist', function(req, res) {
 					ageFormatted: ageStr
 				};
 
-				//files.push(file);
 				files[_files.indexOf(_file)] = file;
 
 				callback();
 			});
 		}, function(err) {
 			if (err) {
-				/* yolobolo. who needs error handling */
 				console.log(err);
+				res.status(500);
+				res.end();
 			} else {
-				//console.log("All files processed");
-				//console.log(JSON.stringify(files));
 				res.status(200);
-				//res.json(JSON.stringify({ files: files }));
 				res.write(JSON.stringify({ files: files }));
 				res.end();
 			}
@@ -254,7 +250,6 @@ app.post('/upload', function(req, res) {
 					handleChunk(fields, files, function(files) {
 						properMove(files.files.path, __dirname + '/tmp/' + files.files.name);
 						var finalName = fixFilenameConflict(__dirname + '/files/' + files.files.name);
-						//properMove('./tmp/' + files.files.name, finalName);
 						fs.renameSync(__dirname + '/tmp/' + files.files.name, finalName);
 						json_files.push({name: path.basename(finalName), size: files.files.size, error: ''});
 					});

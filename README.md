@@ -24,9 +24,10 @@ I have included a sample systemd service unit that will run both files using for
 ## Usage
 You should modify server.js to use your facebook id instead of mine, like so:
 ```JavaScript
-    var XEALOT_USERID = '1020902295'; // Your ID here
+    var FB_USERID = '1020902295'; // Your ID here
 ```
-and then simply run **node server.js**
+alternatively set the environment variable **fbuid** to your ID,
+Then simply run **node server.js**
 
 ## Example
 To see this project running in production please visit:
